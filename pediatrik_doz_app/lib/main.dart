@@ -52,12 +52,6 @@ class _DozHesaplamaEkraniState extends State<DozHesaplamaEkrani> {
                   showSelectedItems: true,
                 ),
                 items: ilaclar.map((e) => e.isim).toList(),
-                dropdownDecoratorProps: DropDownDecoratorProps(
-                  dropdownSearchDecoration: const InputDecoration(
-                    labelText: "İlaç seçin",
-                    border: OutlineInputBorder(),
-                  ),
-                ),
                 onChanged: (value) {
                   setState(() {
                     secilenIlac = value ?? '';
@@ -66,6 +60,12 @@ class _DozHesaplamaEkraniState extends State<DozHesaplamaEkrani> {
                   });
                 },
                 selectedItem: secilenIlac.isEmpty ? null : secilenIlac,
+                dropdownBuilder: (context, selectedItem) {
+                  return Text(
+                    selectedItem ?? "İlaç seçin",
+                    style: const TextStyle(fontSize: 16),
+                  );
+                },
               ),
               const SizedBox(height: 16),
               const Text("Yol Seçimi:"),
@@ -78,12 +78,6 @@ class _DozHesaplamaEkraniState extends State<DozHesaplamaEkrani> {
                     : ilaclar
                         .firstWhere((i) => i.isim == secilenIlac)
                         .yollar,
-                dropdownDecoratorProps: DropDownDecoratorProps(
-                  dropdownSearchDecoration: const InputDecoration(
-                    labelText: "Yol seçin",
-                    border: OutlineInputBorder(),
-                  ),
-                ),
                 onChanged: (value) {
                   setState(() {
                     secilenYol = value ?? '';
@@ -91,6 +85,12 @@ class _DozHesaplamaEkraniState extends State<DozHesaplamaEkrani> {
                   });
                 },
                 selectedItem: secilenYol.isEmpty ? null : secilenYol,
+                dropdownBuilder: (context, selectedItem) {
+                  return Text(
+                    selectedItem ?? "Yol seçin",
+                    style: const TextStyle(fontSize: 16),
+                  );
+                },
               ),
               const SizedBox(height: 16),
               TextField(
