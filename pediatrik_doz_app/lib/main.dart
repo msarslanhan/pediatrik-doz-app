@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 import 'data/ilaclar.dart';
 import 'models/ilac.dart';
 
@@ -40,82 +41,77 @@ class _DozHesaplamaEkraniState extends State<DozHesaplamaEkrani> {
       appBar: AppBar(title: const Text("Pediatrik Doz Hesaplama")),
       body: Padding(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text("İlaç Seçimi:"),
-            DropdownButton<String>(
-              isExpanded: true,
-              value: secilenIlac.isEmpty ? null : secilenIlac,
-              hint: const Text("İlaç seçin"),
-              items: ilaclar
-                  .map((ilac) => DropdownMenuItem(
-                        value: ilac.isim,
-                        child: Text(ilac.isim),
-                      ))
-                  .toList(),
-              onChanged: (value) {
-                setState(() {
-                  secilenIlac = value ?? '';
-                  secilenYol = '';
-                  sonuc = '';
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-            const Text("Yol Seçimi:"),
-            DropdownButton<String>(
-              isExpanded: true,
-              value: secilenYol.isEmpty ? null : secilenYol,
-              hint: const Text("Yol seçin"),
-              items: secilenIlac.isEmpty
-                  ? []
-                  : ilaclar
-                      .firstWhere((i) => i.isim == secilenIlac)
-                      .yollar
-                      .map((yol) => DropdownMenuItem(
-                            value: yol,
-                            child: Text(yol),
-                          ))
-                      .toList(),
-              onChanged: (value) {
-                setState(() {
-                  secilenYol = value ?? '';
-                  sonuc = '';
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: yasController,
-              decoration: const InputDecoration(
-                labelText: "Yaş (yıl)",
-                border: OutlineInputBorder(),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text("İlaç Seçimi:"),
+              DropdownSearch<String>(
+                mode: Mode.BOTTOM_SHEET,
+                showSearchBox: true,
+                items: ilaclar.map((e) => e.isim).toList(),
+                label: "İlaç seçin",
+                onChanged: (value) {
+                  setState(() {
+                    secilenIlac = value ?? '';
+                    secilenYol = '';
+                    sonuc = '';
+                  });
+                },
+                selectedItem: secilenIlac.isEmpty ? null : secilenIlac,
               ),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: kiloController,
-              decoration: const InputDecoration(
-                labelText: "Kilo (kg)",
-                border: OutlineInputBorder(),
+              const SizedBox(height: 16),
+              const Text("Yol Seçimi:"),
+              DropdownSearch<String>(
+                mode: Mode.MENU,
+                items: secilenIlac.isEmpty
+                    ? []
+                    : ilaclar
+                        .firstWhere((i) => i.isim == secilenIlac)
+                        .yollar,
+                label: "Yol seçin",
+                onChanged: (value) {
+                  setState(() {
+                    secilenYol = value ?? '';
+                    sonuc = '';
+                  });
+                },
+                selectedItem: secilenYol.isEmpty ? null : secilenYol,
+                showSearchBox: false,
               ),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 20),
-            Center(
-              child: ElevatedButton(
-                onPressed: hesapla,
-                child: const Text("Dozu Hesapla"),
+              const SizedBox(height: 16),
+              TextField(
+                controller: yasController,
+                decoration: const InputDecoration(
+                  labelText: "Yaş (yıl)",
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
               ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              sonuc,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ],
+              const SizedBox(height: 16),
+              TextField(
+                controller: kiloController,
+                decoration: const InputDecoration(
+                  labelText: "Kilo (kg)",
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 20),
+              Center(
+                child: ElevatedButton(
+                  onPressed: hesapla,
+                  child: const Text("Dozu Hesapla"),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                sonuc,
+                style: const TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
         ),
       ),
     );
