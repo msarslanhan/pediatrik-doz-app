@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'data/ilaclar.dart';
+import 'models/ilac.dart';
 
 void main() {
   runApp(const PediatrikDozApp());
@@ -17,124 +19,78 @@ class PediatrikDozApp extends StatelessWidget {
   }
 }
 
-class Ilac {
-  final String isim;
-  final Map<String, Map<String, double>> dozlar; // route -> {"doz": mg/kg, "max": max mg}
-  final List<String> yollar; // aktif route seçenekleri
+class DozHesaplamaEkrani extends StatefulWidget {
+  const DozHesaplamaEkrani({super.key});
 
-  Ilac({required this.isim, required this.dozlar, required this.yollar});
+  @override
+  State<DozHesaplamaEkrani> createState() => _DozHesaplamaEkraniState();
 }
 
 class _DozHesaplamaEkraniState extends State<DozHesaplamaEkrani> {
   final TextEditingController kiloController = TextEditingController();
   final TextEditingController yasController = TextEditingController();
-  bool birYasAlti = true;
-  String yasTipi = "Ay";
 
-  String secilenIlac = "Parasetamol";
-  String secilenRoute = "PO";
-
-  String sonuc = "";
-
-  final List<Ilac> ilaçlar = [
-    Ilac(
-      isim: "Parasetamol",
-      dozlar: {
-        "PO": {"doz": 15, "max": 90},
-        "IV": {"doz": 15, "max": 90},
-        "IM": {"doz": 15, "max": 90},
-      },
-      yollar: ["PO", "IV", "IM"],
-    ),
-    Ilac(
-      isim: "Diazepam",
-      dozlar: {
-        "IV": {"doz": 1, "max": 10},
-      },
-      yollar: ["IV"],
-    ),
-    Ilac(
-      isim: "Ibuprofen",
-      dozlar: {
-        "PO": {"doz": 10, "max": 40},
-      },
-      yollar: ["PO"],
-    ),
-  ];
-
-  void dozHesapla() {
-    final double? kilo = double.tryParse(kiloController.text);
-    final int? yas = int.tryParse(yasController.text);
-
-    if (kilo == null || yas == null) {
-      setState(() {
-        sonuc = "Lütfen geçerli değerler girin.";
-      });
-      return;
-    }
-
-    Ilac ilac = ilaçlar.firstWhere((i) => i.isim == secilenIlac);
-    if (!ilac.yollar.contains(secilenRoute)) {
-      setState(() {
-        sonuc = "${secilenIlac} için $secilenRoute yolu uygun değil!";
-      });
-      return;
-    }
-
-    double dozKg = ilac.dozlar[secilenRoute]!["doz"]!;
-    double maxDoz = ilac.dozlar[secilenRoute]!["max"]!;
-
-    double hesaplananDoz = kilo * dozKg;
-    if (hesaplananDoz > maxDoz) hesaplananDoz = maxDoz;
-
-    String yasMetin = birYasAlti ? "$yas ay" : "$yas yıl";
-
-    setState(() {
-      sonuc =
-          "Yaş: $yasMetin\nKilo: ${kilo.toStringAsFixed(1)} kg\nİlaç: $secilenIlac\nYol: $secilenRoute\n\nÖnerilen doz: ${hesaplananDoz.toStringAsFixed(1)} mg";
-    });
-  }
+  String secilenIlac = '';
+  String secilenYol = '';
+  String sonuc = '';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Pediatrik Doz Hesaplama")),
-      body: SingleChildScrollView(
+      body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                const Text("Yaş: "),
-                Radio<bool>(
-                  value: true,
-                  groupValue: birYasAlti,
-                  onChanged: (value) {
-                    setState(() {
-                      birYasAlti = value!;
-                      yasTipi = birYasAlti ? "Ay" : "Yıl";
-                    });
-                  },
-                ),
-                const Text("1 yaş altı"),
-                Radio<bool>(
-                  value: false,
-                  groupValue: birYasAlti,
-                  onChanged: (value) {
-                    setState(() {
-                      birYasAlti = value!;
-                      yasTipi = birYasAlti ? "Ay" : "Yıl";
-                    });
-                  },
-                ),
-                const Text("1 yaş ve üstü"),
-              ],
+            const Text("İlaç Seçimi:"),
+            DropdownButton<String>(
+              isExpanded: true,
+              value: secilenIlac.isEmpty ? null : secilenIlac,
+              hint: const Text("İlaç seçin"),
+              items: ilaclar
+                  .map((ilac) => DropdownMenuItem(
+                        value: ilac.isim,
+                        child: Text(ilac.isim),
+                      ))
+                  .toList(),
+              onChanged: (value) {
+                setState(() {
+                  secilenIlac = value ?? '';
+                  secilenYol = '';
+                  sonuc = '';
+                });
+              },
             ),
+            const SizedBox(height: 16),
+            const Text("Yol Seçimi:"),
+            DropdownButton<String>(
+              isExpanded: true,
+              value: secilenYol.isEmpty ? null : secilenYol,
+              hint: const Text("Yol seçin"),
+              items: secilenIlac.isEmpty
+                  ? []
+                  : ilaclar
+                      .firstWhere((i) => i.isim == secilenIlac)
+                      .yollar
+                      .map((yol) => DropdownMenuItem(
+                            value: yol,
+                            child: Text(yol),
+                          ))
+                      .toList(),
+              onChanged: (value) {
+                setState(() {
+                  secilenYol = value ?? '';
+                  sonuc = '';
+                });
+              },
+            ),
+            const SizedBox(height: 16),
             TextField(
               controller: yasController,
-              decoration: InputDecoration(
-                labelText: "Yaş ($yasTipi)",
-                border: const OutlineInputBorder(),
+              decoration: const InputDecoration(
+                labelText: "Yaş (yıl)",
+                border: OutlineInputBorder(),
               ),
               keyboardType: TextInputType.number,
             ),
@@ -147,53 +103,12 @@ class _DozHesaplamaEkraniState extends State<DozHesaplamaEkrani> {
               ),
               keyboardType: TextInputType.number,
             ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: secilenIlac,
-              items: ilaçlar
-                  .map((i) => DropdownMenuItem(
-                        value: i.isim,
-                        child: Text(i.isim),
-                      ))
-                  .toList(),
-              onChanged: (value) {
-                setState(() {
-                  secilenIlac = value!;
-                  // Route seçeneklerini güncelle
-                  Ilac ilac = ilaçlar.firstWhere((i) => i.isim == secilenIlac);
-                  secilenRoute = ilac.yollar.first;
-                });
-              },
-              decoration: const InputDecoration(
-                labelText: "İlaç Seçin",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: secilenRoute,
-              items: ilaçlar
-                  .firstWhere((i) => i.isim == secilenIlac)
-                  .yollar
-                  .map((y) => DropdownMenuItem(
-                        value: y,
-                        child: Text(y),
-                      ))
-                  .toList(),
-              onChanged: (value) {
-                setState(() {
-                  secilenRoute = value!;
-                });
-              },
-              decoration: const InputDecoration(
-                labelText: "Uygulama Yolu (Route)",
-                border: OutlineInputBorder(),
-              ),
-            ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: dozHesapla,
-              child: const Text("Hesapla"),
+            Center(
+              child: ElevatedButton(
+                onPressed: hesapla,
+                child: const Text("Dozu Hesapla"),
+              ),
             ),
             const SizedBox(height: 20),
             Text(
@@ -205,11 +120,28 @@ class _DozHesaplamaEkraniState extends State<DozHesaplamaEkrani> {
       ),
     );
   }
-}
 
-class DozHesaplamaEkrani extends StatefulWidget {
-  const DozHesaplamaEkrani({super.key});
+  void hesapla() {
+    final double? kilo = double.tryParse(kiloController.text);
+    final double? yas = double.tryParse(yasController.text);
 
-  @override
-  State<DozHesaplamaEkrani> createState() => _DozHesaplamaEkraniState();
+    if (kilo == null || yas == null || secilenIlac.isEmpty || secilenYol.isEmpty) {
+      setState(() {
+        sonuc = "Lütfen tüm alanları doldurun.";
+      });
+      return;
+    }
+
+    Ilac ilac = ilaclar.firstWhere((i) => i.isim == secilenIlac);
+    double dozKg = ilac.dozlar[secilenYol]!['doz']!;
+    double maxDoz = ilac.dozlar[secilenYol]!['max']!;
+
+    double hesaplananDoz = kilo * dozKg;
+    if (hesaplananDoz > maxDoz) hesaplananDoz = maxDoz;
+
+    setState(() {
+      sonuc =
+          "İlaç: $secilenIlac\nYol: $secilenYol\nYaş: ${yas.toStringAsFixed(1)} yıl\nKilo: ${kilo.toStringAsFixed(1)} kg\n\nÖnerilen Doz: ${hesaplananDoz.toStringAsFixed(2)} mg";
+    });
+  }
 }
