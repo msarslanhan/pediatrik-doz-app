@@ -47,10 +47,17 @@ class _DozHesaplamaEkraniState extends State<DozHesaplamaEkrani> {
             children: [
               const Text("İlaç Seçimi:"),
               DropdownSearch<String>(
-                mode: Mode.BOTTOM_SHEET,
-                showSearchBox: true,
+                popupProps: PopupProps.bottomSheet(
+                  showSearchBox: true,
+                  showSelectedItems: true,
+                ),
                 items: ilaclar.map((e) => e.isim).toList(),
-                label: "İlaç seçin",
+                dropdownDecoratorProps: DropDownDecoratorProps(
+                  dropdownSearchDecoration: const InputDecoration(
+                    labelText: "İlaç seçin",
+                    border: OutlineInputBorder(),
+                  ),
+                ),
                 onChanged: (value) {
                   setState(() {
                     secilenIlac = value ?? '';
@@ -63,13 +70,20 @@ class _DozHesaplamaEkraniState extends State<DozHesaplamaEkrani> {
               const SizedBox(height: 16),
               const Text("Yol Seçimi:"),
               DropdownSearch<String>(
-                mode: Mode.MENU,
+                popupProps: PopupProps.menu(
+                  showSearchBox: true,
+                ),
                 items: secilenIlac.isEmpty
                     ? []
                     : ilaclar
                         .firstWhere((i) => i.isim == secilenIlac)
                         .yollar,
-                label: "Yol seçin",
+                dropdownDecoratorProps: DropDownDecoratorProps(
+                  dropdownSearchDecoration: const InputDecoration(
+                    labelText: "Yol seçin",
+                    border: OutlineInputBorder(),
+                  ),
+                ),
                 onChanged: (value) {
                   setState(() {
                     secilenYol = value ?? '';
@@ -77,7 +91,6 @@ class _DozHesaplamaEkraniState extends State<DozHesaplamaEkrani> {
                   });
                 },
                 selectedItem: secilenYol.isEmpty ? null : secilenYol,
-                showSearchBox: false,
               ),
               const SizedBox(height: 16),
               TextField(
