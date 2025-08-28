@@ -51,10 +51,7 @@ class _DozHesaplamaEkraniState extends State<DozHesaplamaEkrani> {
                   showSearchBox: true,
                   showSelectedItems: true,
                 ),
-                asyncItems: (String? filter) async {
-                  // filtre eklemek istersen filter kullanabilirsin
-                  return ilaclar.map((e) => e.isim).toList();
-                },
+                items: ilaclar.map((e) => e.isim).toList(),
                 onChanged: (value) {
                   setState(() {
                     secilenIlac = value ?? '';
@@ -76,12 +73,11 @@ class _DozHesaplamaEkraniState extends State<DozHesaplamaEkrani> {
                 popupProps: PopupProps.menu(
                   showSearchBox: true,
                 ),
-                asyncItems: (String? filter) async {
-                  if (secilenIlac.isEmpty) return [];
-                  return ilaclar
-                      .firstWhere((i) => i.isim == secilenIlac)
-                      .yollar;
-                },
+                items: secilenIlac.isEmpty
+                    ? []
+                    : ilaclar
+                        .firstWhere((i) => i.isim == secilenIlac)
+                        .yollar,
                 onChanged: (value) {
                   setState(() {
                     secilenYol = value ?? '';
